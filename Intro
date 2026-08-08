@@ -1,0 +1,4 @@
+Welcome to the backend repository for our skincare platform. 
+This repository contains the server-side application, including APIs, business logic, authentication, database management, and integrations required to power the website.
+Please follow the project's coding standards, use meaningful commit messages, and create feature branches for new work. 
+Collaborate through pull requests, keep documentation updated, and ensure all changes are tested before merging.

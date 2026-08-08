@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: LumiereBackend
+  datasource:
+    url: jdbc:mysql://localhost:3306/ecommerce?useSSL=false&serverTimezone=UTC
+    username: root
+    password: ${DB_PASSWORD:NARASIMHA}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: quadinnovates@gmail.com
+    password: drfm wojy alwr xged
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+lumiere:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:8a2b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3e5f7a9b1c3d5e7f9a1b3c5d7e9f1a3}
+      access-expiration-ms: 900000 # 15 minutes
+      refresh-expiration-ms: 604800000 # 7 days
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:rzp_test_TLGSzVJRJGwDWT}
+    key-secret: ${RAZORPAY_KEY_SECRET:secret_placeholder}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:webhook_secret_placeholder}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:5173}
+
+server:
+  port: 8080
