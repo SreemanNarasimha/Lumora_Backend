@@ -24,12 +24,15 @@ public class ProductService {
     }
 
     public Page<ProductDto> getProducts(Integer categoryId, Long brandId, Long skinTypeId, 
+                                        Long concernId, String ingredient,
                                         BigDecimal minPrice, BigDecimal maxPrice, 
                                         int page, int size, String sortBy) {
         Specification<Product> spec = Specification.where((root, query, cb) -> cb.conjunction());
         if (categoryId != null) spec = spec.and(ProductSpecification.hasCategory(categoryId));
         if (brandId != null) spec = spec.and(ProductSpecification.hasBrand(brandId));
         if (skinTypeId != null) spec = spec.and(ProductSpecification.hasSkinType(skinTypeId));
+        if (concernId != null) spec = spec.and(ProductSpecification.hasConcern(concernId));
+        if (ingredient != null && !ingredient.isEmpty()) spec = spec.and(ProductSpecification.hasIngredient(ingredient));
         if (minPrice != null) spec = spec.and(ProductSpecification.priceGreaterThanOrEqual(minPrice));
         if (maxPrice != null) spec = spec.and(ProductSpecification.priceLessThanOrEqual(maxPrice));
 

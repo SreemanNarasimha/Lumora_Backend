@@ -13,13 +13,13 @@ public class OrderDto {
     private LocalDateTime createdAt;
     private String userEmail;
     private List<OrderItemDto> items;
-}
 
-@Data
-class OrderItemDto {
-    private Integer productId;
-    private String productName;
-    private Integer quantity;
-    private BigDecimal pricePerUnit;
-    private BigDecimal totalPrice;
+    @Data
+    public static class OrderItemDto {
+        private Integer productId;
+        private String productName;
+        private Integer quantity;
+        private BigDecimal pricePerUnit;
+        private BigDecimal totalPrice;
+    }
 }

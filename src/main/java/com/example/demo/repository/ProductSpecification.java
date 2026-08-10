@@ -2,6 +2,7 @@ package com.example.demo.repository;
 
 import com.example.demo.entity.Product;
 import com.example.demo.entity.SkinType;
+import com.example.demo.entity.SkinConcern;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
@@ -21,6 +22,22 @@ public class ProductSpecification {
             if (skinTypeId == null) return null;
             Join<Product, SkinType> skinTypes = root.join("skinTypes");
             return cb.equal(skinTypes.get("skinTypeId"), skinTypeId);
+        };
+    }
+
+    public static Specification<Product> hasConcern(Long concernId) {
+        return (root, query, cb) -> {
+            if (concernId == null) return null;
+            Join<Product, SkinConcern> concerns = root.join("concerns");
+            return cb.equal(concerns.get("concernId"), concernId);
+        };
+    }
+
+    public static Specification<Product> hasIngredient(String ingredient) {
+        return (root, query, cb) -> {
+            if (ingredient == null || ingredient.trim().isEmpty()) return null;
+            // Simple text search on description for ingredients for now
+            return cb.like(cb.lower(root.get("description")), "%" + ingredient.toLowerCase() + "%");
         };
     }
 

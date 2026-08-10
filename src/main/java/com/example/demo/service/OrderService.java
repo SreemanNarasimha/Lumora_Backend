@@ -120,6 +120,22 @@ public class OrderService {
         dto.setStatus(order.getStatus());
         dto.setPaymentStatus(order.getPaymentStatus());
         dto.setCreatedAt(order.getCreatedAt());
+        
+        if (order.getOrderItems() != null) {
+            List<OrderDto.OrderItemDto> itemDtos = order.getOrderItems().stream().map(oi -> {
+                OrderDto.OrderItemDto itemDto = new OrderDto.OrderItemDto();
+                if (oi.getProduct() != null) {
+                    itemDto.setProductId(oi.getProduct().getProductId());
+                }
+                itemDto.setProductName(oi.getProductNameSnapshot());
+                itemDto.setQuantity(oi.getQuantity());
+                itemDto.setPricePerUnit(oi.getPricePerUnit());
+                itemDto.setTotalPrice(oi.getTotalPrice());
+                return itemDto;
+            }).collect(Collectors.toList());
+            dto.setItems(itemDtos);
+        }
+        
         return dto;
     }
 
