@@ -48,6 +48,7 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
+    @org.hibernate.annotations.BatchSize(size = 50)
     private List<ProductImage> images;
 
     @ManyToMany(fetch = FetchType.LAZY)

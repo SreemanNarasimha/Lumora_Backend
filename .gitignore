@@ -35,4 +35,5 @@ build/
 # Local Environment
 .env
 .env.*
+!.env.example
 run-local.ps1

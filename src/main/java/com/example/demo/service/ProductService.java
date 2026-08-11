@@ -51,14 +51,16 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         
+        if (product.getCategory() == null) {
+            return java.util.Collections.emptyList();
+        }
+
         // Find products in the same category, excluding the current product, limit to 4
-        return productRepository.findAll().stream()
-                .filter(p -> p.getCategory() != null && product.getCategory() != null)
-                .filter(p -> p.getCategory().getCategoryId().equals(product.getCategory().getCategoryId()))
-                .filter(p -> !p.getProductId().equals(productId))
-                .limit(4)
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+        return productRepository.findRecommendations(
+                product.getCategory().getCategoryId(), 
+                productId, 
+                PageRequest.of(0, 4)
+        ).stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
     public ProductDto mapToDto(Product product) {
