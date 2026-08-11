@@ -78,7 +78,7 @@ public class AuthController {
             
             ResponseCookie accessCookie = ResponseCookie.from("access_token", tokens[0])
                     .httpOnly(true)
-                    .secure(true)
+                    .secure(httpRequest.isSecure())
                     .sameSite("Strict")
                     .path("/")
                     .maxAge(900) // 15 mins
@@ -86,7 +86,7 @@ public class AuthController {
                     
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", tokens[1])
                     .httpOnly(true)
-                    .secure(true)
+                    .secure(httpRequest.isSecure())
                     .sameSite("Strict")
                     .path("/api/auth/refresh")
                     .maxAge(7 * 24 * 3600) // 7 days
@@ -133,10 +133,10 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
+    public ResponseEntity<?> logout(HttpServletRequest httpRequest) {
         ResponseCookie accessCookie = ResponseCookie.from("access_token", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(httpRequest.isSecure())
                 .sameSite("Strict")
                 .path("/")
                 .maxAge(0)
@@ -144,7 +144,7 @@ public class AuthController {
                 
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(httpRequest.isSecure())
                 .sameSite("Strict")
                 .path("/api/auth/refresh")
                 .maxAge(0)

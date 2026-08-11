@@ -28,6 +28,11 @@ public class Product {
     private Integer stock;
 
     @Column(unique = true)
+    private String sku;
+
+    private String barcode;
+
+    @Column(unique = true)
     private String slug;
 
     @Column(precision = 2, scale = 1)

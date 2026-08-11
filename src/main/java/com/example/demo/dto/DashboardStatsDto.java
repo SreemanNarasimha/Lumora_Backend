@@ -16,4 +16,5 @@ public class DashboardStatsDto {
     private long lowStockProducts;
     private long pendingRefunds;
     private java.util.List<java.util.Map<String, Object>> chartData;
+    private java.util.List<java.util.Map<String, Object>> topProducts;
 }

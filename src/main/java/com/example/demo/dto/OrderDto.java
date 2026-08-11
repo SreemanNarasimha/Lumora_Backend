@@ -12,6 +12,10 @@ public class OrderDto {
     private String paymentStatus;
     private LocalDateTime createdAt;
     private String userEmail;
+    private String trackingNumber;
+    private String courierName;
+    private String refundStatus;
+    private String refundReason;
     private List<OrderItemDto> items;
 
     @Data

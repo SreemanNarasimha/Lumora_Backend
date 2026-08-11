@@ -37,4 +37,9 @@ public class ProductController {
     public ResponseEntity<ProductDto> getProduct(@PathVariable String slug) {
         return ResponseEntity.ok(productService.getProductBySlug(slug));
     }
+
+    @GetMapping("/{id}/recommendations")
+    public ResponseEntity<java.util.List<ProductDto>> getRecommendations(@PathVariable Integer id) {
+        return ResponseEntity.ok(productService.getRecommendations(id));
+    }
 }

@@ -13,5 +13,7 @@ public class AdminProductRequest {
     private Long brandId;
     private Long skinTypeId;
     private Integer stock;
+    private String sku;
+    private String barcode;
     private List<String> images;
 }

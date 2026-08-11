@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JournalPromptRepository extends JpaRepository<JournalPrompt, Integer> {
-    @Query(value = "SELECT * FROM journal_prompts ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT * FROM journal_prompts ORDER BY RANDOM() LIMIT 1", nativeQuery = true)
     JournalPrompt findRandomPrompt();
 }

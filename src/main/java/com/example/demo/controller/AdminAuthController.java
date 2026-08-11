@@ -44,7 +44,7 @@ public class AdminAuthController {
             
             ResponseCookie accessCookie = ResponseCookie.from("access_token", tokens[0])
                     .httpOnly(true)
-                    .secure(true)
+                    .secure(httpRequest.isSecure())
                     .sameSite("Strict")
                     .path("/")
                     .maxAge(900) // 15 mins
@@ -52,7 +52,7 @@ public class AdminAuthController {
                     
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", tokens[1])
                     .httpOnly(true)
-                    .secure(true)
+                    .secure(httpRequest.isSecure())
                     .sameSite("Strict")
                     .path("/api/auth/refresh")
                     .maxAge(7 * 24 * 3600) // 7 days

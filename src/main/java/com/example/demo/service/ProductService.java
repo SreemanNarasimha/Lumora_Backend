@@ -47,6 +47,20 @@ public class ProductService {
         return mapToDto(product);
     }
 
+    public java.util.List<ProductDto> getRecommendations(Integer productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        
+        // Find products in the same category, excluding the current product, limit to 4
+        return productRepository.findAll().stream()
+                .filter(p -> p.getCategory() != null && product.getCategory() != null)
+                .filter(p -> p.getCategory().getCategoryId().equals(product.getCategory().getCategoryId()))
+                .filter(p -> !p.getProductId().equals(productId))
+                .limit(4)
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
     public ProductDto mapToDto(Product product) {
         ProductDto dto = new ProductDto();
         dto.setProductId(product.getProductId());
@@ -58,6 +72,8 @@ public class ProductService {
         dto.setCategoryName(product.getCategory() != null ? product.getCategory().getCategoryName() : null);
         dto.setBrandName(product.getBrand() != null ? product.getBrand().getBrandName() : null);
         dto.setStock(product.getStock() != null ? product.getStock() : 0);
+        dto.setSku(product.getSku());
+        dto.setBarcode(product.getBarcode());
         dto.setImages(product.getImages().stream().map(ProductImage::getImageUrl).collect(Collectors.toList()));
         return dto;
     }

@@ -37,6 +37,9 @@ public class User {
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified = false;
 
+    @Column(name = "loyalty_points")
+    private Integer loyaltyPoints = 0;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

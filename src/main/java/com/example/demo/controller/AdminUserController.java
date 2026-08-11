@@ -30,13 +30,16 @@ public class AdminUserController {
     public ResponseEntity<?> getAllUsers() {
         List<User> users = userRepository.findAll();
         // Mask password hash for security
-        List<Map<String, Object>> userDtos = users.stream().map(u -> Map.<String, Object>of(
-                "userId", u.getUserId(),
-                "email", u.getEmail(),
-                "fullName", u.getFullName(),
-                "role", u.getRole(),
-                "createdAt", u.getCreatedAt()
-        )).collect(Collectors.toList());
+        List<Map<String, Object>> userDtos = users.stream().map(u -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("userId", u.getUserId());
+            map.put("email", u.getEmail());
+            map.put("fullName", u.getFullName());
+            map.put("role", u.getRole());
+            map.put("createdAt", u.getCreatedAt());
+            map.put("loyaltyPoints", u.getLoyaltyPoints() != null ? u.getLoyaltyPoints() : 0);
+            return map;
+        }).collect(Collectors.toList());
         
         return ResponseEntity.ok(userDtos);
     }

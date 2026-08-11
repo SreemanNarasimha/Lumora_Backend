@@ -20,4 +20,11 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     long countByStatus(String status);
     long countByPaymentStatus(String paymentStatus);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p.name, SUM(i.quantity) as totalSold, p.price, p.stock " +
+            "FROM OrderItem i JOIN i.product p JOIN i.order o " +
+            "WHERE o.paymentStatus = 'PAID' " +
+            "GROUP BY p.productId, p.name, p.price, p.stock " +
+            "ORDER BY totalSold DESC")
+    List<Object[]> getTopSellingProducts(org.springframework.data.domain.Pageable pageable);
 }

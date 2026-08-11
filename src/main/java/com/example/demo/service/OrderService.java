@@ -179,6 +179,7 @@ public class OrderService {
                 }
                 orderRepository.save(order);
                 
+                // Clear the cart after successful payment verification
                 cartItemRepository.deleteByUserUserId(userId);
                 
                 Notification notif = new Notification();

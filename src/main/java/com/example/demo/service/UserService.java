@@ -11,6 +11,8 @@ import com.example.demo.dto.MessageResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.demo.repository.OrderRepository;
+import com.example.demo.entity.Order;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,11 +23,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OrderRepository orderRepository;
 
-    public UserService(UserRepository userRepository, AddressRepository addressRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, AddressRepository addressRepository, PasswordEncoder passwordEncoder, OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
         this.passwordEncoder = passwordEncoder;
+        this.orderRepository = orderRepository;
     }
 
     public UserDto getProfile(Integer userId) {
@@ -98,7 +102,7 @@ public class UserService {
     }
 
     private UserDto mapUserToDto(User user) {
-        return new UserDto(user.getUserId(), user.getUsername(), user.getFullName(), user.getEmail(), user.getPhone(), user.getRole());
+        return new UserDto(user.getUserId(), user.getUsername(), user.getFullName(), user.getEmail(), user.getPhone(), user.getRole(), user.getLoyaltyPoints());
     }
 
     private AddressDto mapAddressToDto(Address address) {
@@ -114,5 +118,23 @@ public class UserService {
         dto.setPhone(address.getPhone());
         dto.setIsDefault(address.getIsDefault());
         return dto;
+    }
+
+    @Transactional
+    public void deleteAccount(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // GDPR: Anonymize orders
+        List<Order> orders = orderRepository.findByUserUserIdOrderByCreatedAtDesc(userId);
+        for (Order o : orders) {
+            o.setUser(null);
+            o.setUserEmail("deleted_user_" + userId + "@lumora.com");
+        }
+        orderRepository.saveAll(orders);
+
+        // Delete user (cascade removes addresses usually, or delete manually if needed)
+        addressRepository.deleteAll(addressRepository.findByUserUserId(userId));
+        userRepository.delete(user);
     }
 }

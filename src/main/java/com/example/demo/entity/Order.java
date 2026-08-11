@@ -23,6 +23,9 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "user_email")
+    private String userEmail;
+
     @Column(name = "total_amount")
     private BigDecimal totalAmount;
 
@@ -40,6 +43,21 @@ public class Order {
 
     @Column(name = "payment_status", nullable = false)
     private String paymentStatus = "PENDING";
+
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
+    @Column(name = "courier_name")
+    private String courierName;
+
+    @Column(name = "refund_status")
+    private String refundStatus = "NONE"; // NONE, REQUESTED, PROCESSING, REFUNDED, REJECTED
+
+    @Column(name = "refund_reason")
+    private String refundReason;
+
+    @Column(name = "points_earned")
+    private Integer pointsEarned = 0;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

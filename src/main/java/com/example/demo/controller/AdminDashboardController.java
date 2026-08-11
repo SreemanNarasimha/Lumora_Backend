@@ -49,6 +49,17 @@ public class AdminDashboardController {
             chartData.add(map);
         }
 
+        java.util.List<Object[]> rawTopProducts = orderRepository.getTopSellingProducts(org.springframework.data.domain.PageRequest.of(0, 5));
+        java.util.List<java.util.Map<String, Object>> topProducts = new java.util.ArrayList<>();
+        for (Object[] row : rawTopProducts) {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("name", row[0]);
+            map.put("totalSold", row[1]);
+            map.put("price", row[2]);
+            map.put("stock", row[3]);
+            topProducts.add(map);
+        }
+
         DashboardStatsDto stats = new DashboardStatsDto(
                 totalRevenue,
                 totalOrders,
@@ -56,7 +67,8 @@ public class AdminDashboardController {
                 totalProducts,
                 lowStockProducts,
                 pendingRefunds,
-                chartData
+                chartData,
+                topProducts
         );
 
         return ResponseEntity.ok(stats);

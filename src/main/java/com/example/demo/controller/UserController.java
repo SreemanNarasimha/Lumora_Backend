@@ -56,4 +56,10 @@ public class UserController {
     public ResponseEntity<MessageResponse> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
         return ResponseEntity.ok(userService.changePassword(getUserId(authentication), request));
     }
+
+    @DeleteMapping("/me/account")
+    public ResponseEntity<MessageResponse> deleteAccount(Authentication authentication) {
+        userService.deleteAccount(getUserId(authentication));
+        return ResponseEntity.ok(new MessageResponse("Account deleted and data anonymized."));
+    }
 }
