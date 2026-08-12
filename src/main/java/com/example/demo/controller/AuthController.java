@@ -78,16 +78,16 @@ public class AuthController {
             
             ResponseCookie accessCookie = ResponseCookie.from("access_token", tokens[0])
                     .httpOnly(true)
-                    .secure(httpRequest.isSecure())
-                    .sameSite("Strict")
+                    .secure(true)
+                    .sameSite("None")
                     .path("/")
                     .maxAge(900) // 15 mins
                     .build();
                     
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", tokens[1])
                     .httpOnly(true)
-                    .secure(httpRequest.isSecure())
-                    .sameSite("Strict")
+                    .secure(true)
+                    .sameSite("None")
                     .path("/api/auth/refresh")
                     .maxAge(7 * 24 * 3600) // 7 days
                     .build();
@@ -136,16 +136,16 @@ public class AuthController {
     public ResponseEntity<?> logout(HttpServletRequest httpRequest) {
         ResponseCookie accessCookie = ResponseCookie.from("access_token", "")
                 .httpOnly(true)
-                .secure(httpRequest.isSecure())
-                .sameSite("Strict")
+                .secure(true)
+                .sameSite("None")
                 .path("/")
                 .maxAge(0)
                 .build();
                 
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
-                .secure(httpRequest.isSecure())
-                .sameSite("Strict")
+                .secure(true)
+                .sameSite("None")
                 .path("/api/auth/refresh")
                 .maxAge(0)
                 .build();
