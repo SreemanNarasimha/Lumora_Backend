@@ -25,7 +25,14 @@ public class AdminUserSeeder implements CommandLineRunner {
             admin.setUsername("admin");
             admin.setFullName("Super Admin");
             admin.setEmail(adminEmail);
-            admin.setPasswordHash(passwordEncoder.encode("admin123")); // Default password
+            String defaultPassword = System.getenv("ADMIN_PASSWORD");
+            if (defaultPassword == null || defaultPassword.trim().isEmpty()) {
+                defaultPassword = java.util.UUID.randomUUID().toString();
+                System.out.println("=================================================");
+                System.out.println("GENERATED ADMIN PASSWORD: " + defaultPassword);
+                System.out.println("=================================================");
+            }
+            admin.setPasswordHash(passwordEncoder.encode(defaultPassword)); // Dynamic password
             admin.setPhone("1234567890");
             admin.setRole("SUPER_ADMIN");
             admin.setIsVerified(true);

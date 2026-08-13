@@ -104,6 +104,7 @@ public class OrderService {
         response.setRazorpayOrderId(rzpOrderId);
         response.setAmount(String.valueOf(amountInPaise));
         response.setCurrency("INR");
+        response.setKeyId(razorpayKeyId);
         return response;
     }
 
