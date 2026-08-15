@@ -34,10 +34,16 @@ public class AuthController {
 
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendOtp(@Valid @RequestBody SendOtpRequest request, HttpServletRequest httpRequest) {
-        Bucket bucket = rateLimitingService.resolveBucket(getClientIP(httpRequest));
-        if (!bucket.tryConsume(1)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new MessageResponse("Too many requests. Please try again later."));
+        Bucket ipBucket = rateLimitingService.resolveOtpIpBucket(getClientIP(httpRequest));
+        if (!ipBucket.tryConsume(1)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new MessageResponse("Too many requests from this IP. Please try again later."));
         }
+        
+        Bucket emailBucket = rateLimitingService.resolveOtpEmailBucket(request.getEmail());
+        if (!emailBucket.tryConsume(1)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new MessageResponse("Too many requests for this email. Please try again later."));
+        }
+        
         try {
             return ResponseEntity.ok(authService.sendOtp(request.getEmail()));
         } catch (Exception e) {
@@ -103,10 +109,16 @@ public class AuthController {
 
     @PostMapping("/forgot-password/send-otp")
     public ResponseEntity<?> forgotPasswordSendOtp(@Valid @RequestBody SendOtpRequest request, HttpServletRequest httpRequest) {
-        Bucket bucket = rateLimitingService.resolveBucket(getClientIP(httpRequest));
-        if (!bucket.tryConsume(1)) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new MessageResponse("Too many requests. Please try again later."));
+        Bucket ipBucket = rateLimitingService.resolveOtpIpBucket(getClientIP(httpRequest));
+        if (!ipBucket.tryConsume(1)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new MessageResponse("Too many requests from this IP. Please try again later."));
         }
+        
+        Bucket emailBucket = rateLimitingService.resolveOtpEmailBucket(request.getEmail());
+        if (!emailBucket.tryConsume(1)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new MessageResponse("Too many requests for this email. Please try again later."));
+        }
+        
         try {
             return ResponseEntity.ok(authService.forgotPasswordSendOtp(request.getEmail()));
         } catch (Exception e) {

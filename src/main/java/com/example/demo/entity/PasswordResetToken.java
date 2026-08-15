@@ -28,4 +28,24 @@ public class PasswordResetToken {
     
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified = false;
+
+    @Column(name = "attempt_count", nullable = false)
+    private Integer attemptCount = 0;
+
+    @Column(name = "used", nullable = false)
+    private Boolean used = false;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "last_sent_at", nullable = false)
+    private LocalDateTime lastSentAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        if (lastSentAt == null) {
+            lastSentAt = createdAt;
+        }
+    }
 }

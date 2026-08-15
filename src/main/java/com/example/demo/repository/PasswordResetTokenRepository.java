@@ -9,5 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Integer> {
-    Optional<PasswordResetToken> findByUser(User user);
+    Optional<PasswordResetToken> findTopByUserOrderByCreatedAtDesc(User user);
+    
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE PasswordResetToken p SET p.used = true WHERE p.user = :user")
+    void invalidateAllUserTokens(User user);
 }

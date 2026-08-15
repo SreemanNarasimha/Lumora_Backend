@@ -28,12 +28,12 @@ public class AuthService {
     private final JwtTokenRepository jwtTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final ResendEmailService emailService;
     private final JwtUtil jwtUtil;
 
     public AuthService(UserRepository userRepository, PendingRegistrationRepository pendingRegistrationRepository,
                        JwtTokenRepository jwtTokenRepository, PasswordResetTokenRepository passwordResetTokenRepository,
-                       PasswordEncoder passwordEncoder, EmailService emailService, JwtUtil jwtUtil) {
+                       PasswordEncoder passwordEncoder, ResendEmailService emailService, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.pendingRegistrationRepository = pendingRegistrationRepository;
         this.jwtTokenRepository = jwtTokenRepository;
@@ -49,18 +49,28 @@ public class AuthService {
             throw new RuntimeException("Email is already registered. Please login.");
         }
 
-        String otp = String.format("%06d", new Random().nextInt(999999));
-        String otpHash = passwordEncoder.encode(otp);
-
         PendingRegistration pending = pendingRegistrationRepository.findByEmail(email)
                 .orElse(new PendingRegistration());
+
+        if (pending.getId() != null && pending.getCreatedAt() != null) {
+            // Check cooldown (60 seconds)
+            // Note: PendingRegistration uses createdAt/lastSentAt implicitly. We didn't add lastSentAt explicitly in PendingRegistration,
+            // but we can just update createdAt or use a simple check on otpExpiresAt.
+            // Since otpExpiresAt was 15m, now we make it 5m.
+            if (pending.getOtpExpiresAt() != null && pending.getOtpExpiresAt().minusMinutes(5).plusSeconds(60).isAfter(LocalDateTime.now())) {
+                throw new RuntimeException("Please wait 60 seconds before requesting a new OTP.");
+            }
+        }
+
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        String otpHash = passwordEncoder.encode(otp);
 
         pending.setEmail(email);
         pending.setFullName("Pending");
         pending.setUsername("pending");
         pending.setPasswordHash("");
         pending.setOtpHash(otpHash);
-        pending.setOtpExpiresAt(LocalDateTime.now().plusMinutes(15));
+        pending.setOtpExpiresAt(LocalDateTime.now().plusMinutes(5));
         pending.setAttemptCount(0);
         pending.setIsEmailVerified(false);
 
@@ -75,6 +85,10 @@ public class AuthService {
     public MessageResponse verifyEmail(VerifyOtpRequest request) {
         PendingRegistration pending = pendingRegistrationRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("No pending registration found for this email."));
+
+        if (pending.getAttemptCount() >= 5) {
+            throw new RuntimeException("Too many failed attempts. Please request a new OTP.");
+        }
 
         if (pending.getOtpExpiresAt().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("OTP has expired. Please request a new one.");
@@ -153,16 +167,26 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
+        passwordResetTokenRepository.findTopByUserOrderByCreatedAtDesc(user).ifPresent(token -> {
+            if (token.getLastSentAt() != null && token.getLastSentAt().plusSeconds(60).isAfter(LocalDateTime.now())) {
+                throw new RuntimeException("Please wait 60 seconds before requesting a new OTP.");
+            }
+        });
+
+        // Invalidate all previous tokens
+        passwordResetTokenRepository.invalidateAllUserTokens(user);
+
         String otp = String.format("%06d", new Random().nextInt(999999));
         String otpHash = passwordEncoder.encode(otp);
 
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByUser(user)
-                .orElse(new com.example.demo.entity.PasswordResetToken());
-        
+        PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setUser(user);
         resetToken.setOtpHash(otpHash);
-        resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+        resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(5));
         resetToken.setIsVerified(false);
+        resetToken.setAttemptCount(0);
+        resetToken.setUsed(false);
+        resetToken.setLastSentAt(LocalDateTime.now());
 
         passwordResetTokenRepository.save(resetToken);
         emailService.sendOtpEmail(email, otp);
@@ -175,14 +199,24 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByUser(user)
+        PasswordResetToken resetToken = passwordResetTokenRepository.findTopByUserOrderByCreatedAtDesc(user)
                 .orElseThrow(() -> new RuntimeException("No password reset request found."));
+
+        if (Boolean.TRUE.equals(resetToken.getUsed())) {
+            throw new RuntimeException("This OTP has already been used or invalidated.");
+        }
+
+        if (resetToken.getAttemptCount() >= 5) {
+            throw new RuntimeException("Too many failed attempts. Please request a new OTP.");
+        }
 
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("OTP has expired. Please request a new one.");
         }
 
         if (!passwordEncoder.matches(request.getOtp(), resetToken.getOtpHash())) {
+            resetToken.setAttemptCount(resetToken.getAttemptCount() + 1);
+            passwordResetTokenRepository.save(resetToken);
             throw new RuntimeException("Invalid OTP. Please try again.");
         }
 
@@ -197,8 +231,12 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByUser(user)
+        PasswordResetToken resetToken = passwordResetTokenRepository.findTopByUserOrderByCreatedAtDesc(user)
                 .orElseThrow(() -> new RuntimeException("No password reset request found."));
+
+        if (Boolean.TRUE.equals(resetToken.getUsed())) {
+            throw new RuntimeException("This OTP has already been used.");
+        }
 
         if (!Boolean.TRUE.equals(resetToken.getIsVerified())) {
             throw new RuntimeException("OTP not verified. Please verify OTP first.");
@@ -211,7 +249,8 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
         
-        passwordResetTokenRepository.delete(resetToken);
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
 
         return new MessageResponse("Password reset successfully. You can now login.");
     }
@@ -226,3 +265,4 @@ public class AuthService {
         }
     }
 }
+
