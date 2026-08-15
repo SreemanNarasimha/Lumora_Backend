@@ -17,22 +17,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-    properties:
-      mail:
-        debug: true
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-          connectiontimeout: 20000
-          timeout: 20000
-          writetimeout: 20000
+
 
 lumiere:
   security:
