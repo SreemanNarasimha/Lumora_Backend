@@ -23,16 +23,16 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public Page<ProductDto> getProducts(Integer categoryId, Long brandId, Long skinTypeId, 
-                                        Long concernId, String ingredient,
+    public Page<ProductDto> getProducts(Integer categoryId, Long brandId, java.util.List<Long> skinTypeId, 
+                                        java.util.List<Long> concernId, java.util.List<String> ingredient,
                                         BigDecimal minPrice, BigDecimal maxPrice, 
                                         int page, int size, String sortBy) {
         Specification<Product> spec = Specification.where((root, query, cb) -> cb.conjunction());
         if (categoryId != null) spec = spec.and(ProductSpecification.hasCategory(categoryId));
         if (brandId != null) spec = spec.and(ProductSpecification.hasBrand(brandId));
-        if (skinTypeId != null) spec = spec.and(ProductSpecification.hasSkinType(skinTypeId));
-        if (concernId != null) spec = spec.and(ProductSpecification.hasConcern(concernId));
-        if (ingredient != null && !ingredient.isEmpty()) spec = spec.and(ProductSpecification.hasIngredient(ingredient));
+        if (skinTypeId != null && !skinTypeId.isEmpty()) spec = spec.and(ProductSpecification.hasSkinTypeIn(skinTypeId));
+        if (concernId != null && !concernId.isEmpty()) spec = spec.and(ProductSpecification.hasConcernIn(concernId));
+        if (ingredient != null && !ingredient.isEmpty()) spec = spec.and(ProductSpecification.hasIngredientIn(ingredient));
         if (minPrice != null) spec = spec.and(ProductSpecification.priceGreaterThanOrEqual(minPrice));
         if (maxPrice != null) spec = spec.and(ProductSpecification.priceLessThanOrEqual(maxPrice));
 

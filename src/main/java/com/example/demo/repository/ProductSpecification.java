@@ -17,27 +17,33 @@ public class ProductSpecification {
         return (root, query, cb) -> brandId == null ? null : cb.equal(root.get("brand").get("brandId"), brandId);
     }
 
-    public static Specification<Product> hasSkinType(Long skinTypeId) {
+    public static Specification<Product> hasSkinTypeIn(java.util.List<Long> skinTypeIds) {
         return (root, query, cb) -> {
-            if (skinTypeId == null) return null;
+            if (skinTypeIds == null || skinTypeIds.isEmpty()) return null;
             Join<Product, SkinType> skinTypes = root.join("skinTypes");
-            return cb.equal(skinTypes.get("skinTypeId"), skinTypeId);
+            return skinTypes.get("skinTypeId").in(skinTypeIds);
         };
     }
 
-    public static Specification<Product> hasConcern(Long concernId) {
+    public static Specification<Product> hasConcernIn(java.util.List<Long> concernIds) {
         return (root, query, cb) -> {
-            if (concernId == null) return null;
+            if (concernIds == null || concernIds.isEmpty()) return null;
             Join<Product, SkinConcern> concerns = root.join("concerns");
-            return cb.equal(concerns.get("concernId"), concernId);
+            return concerns.get("concernId").in(concernIds);
         };
     }
 
-    public static Specification<Product> hasIngredient(String ingredient) {
+    public static Specification<Product> hasIngredientIn(java.util.List<String> ingredients) {
         return (root, query, cb) -> {
-            if (ingredient == null || ingredient.trim().isEmpty()) return null;
-            // Simple text search on description for ingredients for now
-            return cb.like(cb.lower(root.get("description")), "%" + ingredient.toLowerCase() + "%");
+            if (ingredients == null || ingredients.isEmpty()) return null;
+            // Join with OR conditions for multiple ingredients using like
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+            for (String ingredient : ingredients) {
+                if (ingredient != null && !ingredient.trim().isEmpty()) {
+                    predicates.add(cb.like(cb.lower(root.get("description")), "%" + ingredient.toLowerCase() + "%"));
+                }
+            }
+            return cb.or(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
     }
 

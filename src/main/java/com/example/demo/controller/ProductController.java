@@ -22,9 +22,9 @@ public class ProductController {
     public ResponseEntity<Page<ProductDto>> getProducts(
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) Long brandId,
-            @RequestParam(required = false) Long skinTypeId,
-            @RequestParam(required = false) Long concernId,
-            @RequestParam(required = false) String ingredient,
+            @RequestParam(required = false) java.util.List<Long> skinTypeId,
+            @RequestParam(required = false) java.util.List<Long> concernId,
+            @RequestParam(required = false) java.util.List<String> ingredient,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
