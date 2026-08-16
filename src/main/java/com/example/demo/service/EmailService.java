@@ -22,8 +22,8 @@ public class EmailService {
     @Value("${brevo.sender-name}")
     private String senderName;
 
-    public EmailService(WebClient.Builder webClientBuilder, @Value("${brevo.api-key}") String apiKey) {
-        this.webClient = webClientBuilder
+    public EmailService(@Value("${brevo.api-key}") String apiKey) {
+        this.webClient = WebClient.builder()
                 .baseUrl("https://api.brevo.com")
                 .defaultHeader("api-key", apiKey)
                 .defaultHeader("accept", MediaType.APPLICATION_JSON_VALUE)
