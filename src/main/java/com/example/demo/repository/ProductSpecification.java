@@ -20,24 +20,57 @@ public class ProductSpecification {
     public static Specification<Product> hasSkinTypeIn(java.util.List<Long> skinTypeIds) {
         return (root, query, cb) -> {
             if (skinTypeIds == null || skinTypeIds.isEmpty()) return null;
-            Join<Product, SkinType> skinTypes = root.join("skinTypes");
-            return skinTypes.get("skinTypeId").in(skinTypeIds);
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+            for (Long id : skinTypeIds) {
+                jakarta.persistence.criteria.Subquery<Integer> subquery = query.subquery(Integer.class);
+                jakarta.persistence.criteria.Root<Product> subRoot = subquery.from(Product.class);
+                Join<Product, SkinType> subJoin = subRoot.join("skinTypes");
+                subquery.select(cb.literal(1));
+                subquery.where(cb.and(
+                    cb.equal(subRoot.get("productId"), root.get("productId")),
+                    cb.equal(subJoin.get("skinTypeId"), id)
+                ));
+                predicates.add(cb.exists(subquery));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
     }
 
     public static Specification<Product> hasConcernIn(java.util.List<Long> concernIds) {
         return (root, query, cb) -> {
             if (concernIds == null || concernIds.isEmpty()) return null;
-            Join<Product, SkinConcern> concerns = root.join("concerns");
-            return concerns.get("concernId").in(concernIds);
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+            for (Long id : concernIds) {
+                jakarta.persistence.criteria.Subquery<Integer> subquery = query.subquery(Integer.class);
+                jakarta.persistence.criteria.Root<Product> subRoot = subquery.from(Product.class);
+                Join<Product, SkinConcern> subJoin = subRoot.join("concerns");
+                subquery.select(cb.literal(1));
+                subquery.where(cb.and(
+                    cb.equal(subRoot.get("productId"), root.get("productId")),
+                    cb.equal(subJoin.get("concernId"), id)
+                ));
+                predicates.add(cb.exists(subquery));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
     }
 
     public static Specification<Product> hasIngredientIn(java.util.List<String> ingredients) {
         return (root, query, cb) -> {
             if (ingredients == null || ingredients.isEmpty()) return null;
-            Join<Product, com.example.demo.entity.Ingredient> ingredientJoin = root.join("ingredients");
-            return ingredientJoin.get("name").in(ingredients);
+            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
+            for (String name : ingredients) {
+                jakarta.persistence.criteria.Subquery<Integer> subquery = query.subquery(Integer.class);
+                jakarta.persistence.criteria.Root<Product> subRoot = subquery.from(Product.class);
+                Join<Product, com.example.demo.entity.Ingredient> subJoin = subRoot.join("ingredients");
+                subquery.select(cb.literal(1));
+                subquery.where(cb.and(
+                    cb.equal(subRoot.get("productId"), root.get("productId")),
+                    cb.equal(subJoin.get("name"), name)
+                ));
+                predicates.add(cb.exists(subquery));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
     }
 
