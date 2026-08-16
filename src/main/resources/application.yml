@@ -18,23 +18,6 @@ spring:
       hibernate:
         format_sql: false
 
-  mail:
-    host: smtp-relay.brevo.com
-    port: 2525
-    username: ${BREVO_SMTP_LOGIN}
-    password: ${BREVO_SMTP_KEY}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-          connectiontimeout: 20000
-          timeout: 20000
-          writetimeout: 20000
-
-
 lumiere:
   security:
     jwt:
@@ -49,6 +32,7 @@ lumiere:
     url: ${FRONTEND_URL}
 
 brevo:
+  api-key: ${BREVO_API_KEY}
   sender-email: ${BREVO_SENDER_EMAIL}
   sender-name: ${BREVO_SENDER_NAME}
 

@@ -1,16 +1,20 @@
 package com.example.demo.service;
 
-import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.http.MediaType;
+
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final WebClient webClient;
 
     @Value("${brevo.sender-email}")
     private String senderEmail;
@@ -18,8 +22,13 @@ public class EmailService {
     @Value("${brevo.sender-name}")
     private String senderName;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public EmailService(WebClient.Builder webClientBuilder, @Value("${brevo.api-key}") String apiKey) {
+        this.webClient = webClientBuilder
+                .baseUrl("https://api.brevo.com")
+                .defaultHeader("api-key", apiKey)
+                .defaultHeader("accept", MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("content-type", MediaType.APPLICATION_JSON_VALUE)
+                .build();
     }
 
     public void sendVerificationOtp(String to, String otp) {
@@ -35,22 +44,27 @@ public class EmailService {
     }
 
     private void sendHtmlEmail(String to, String subject, String messageBody, String otp) {
+        Map<String, Object> requestBody = Map.of(
+                "sender", Map.of("name", senderName, "email", senderEmail),
+                "to", List.of(Map.of("email", to)),
+                "subject", subject,
+                "htmlContent", buildLuxuryHtmlTemplate(messageBody, otp)
+        );
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(senderEmail, senderName);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(buildLuxuryHtmlTemplate(messageBody, otp), true);
-
-            mailSender.send(message);
-            System.out.println("SMTP Status: Successfully sent OTP email to " + to + " at " + java.time.LocalDateTime.now());
-        } catch (MailException e) {
-            System.err.println("SMTP Error at " + java.time.LocalDateTime.now() + " - Recipient: " + to + " - Message: " + e.getMessage());
+            webClient.post()
+                    .uri("/v3/smtp/email")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
+            
+            System.out.println("API Status: Successfully sent OTP email to " + to + " at " + LocalDateTime.now());
+        } catch (WebClientResponseException e) {
+            System.err.println("API Error at " + LocalDateTime.now() + " - Recipient: " + to + " - Status: " + e.getStatusCode() + " - Body: " + e.getResponseBodyAsString());
             throw new RuntimeException("Unable to send verification email. Please try again.");
         } catch (Exception e) {
-            System.err.println("Unexpected Error at " + java.time.LocalDateTime.now() + " - Recipient: " + to + " - Message: " + e.getMessage());
+            System.err.println("Unexpected Error at " + LocalDateTime.now() + " - Recipient: " + to + " - Message: " + e.getMessage());
             throw new RuntimeException("Unable to send verification email. Please try again.");
         }
     }
@@ -87,7 +101,7 @@ public class EmailService {
                "          </tr>" +
                "          <tr>" +
                "            <td style=\"padding: 20px 40px; background-color: #FAF8F4; text-align: center;\">" +
-               "              <p style=\"margin: 0; font-size: 12px; color: #888888;\">&copy; " + java.time.Year.now().getValue() + " Lumora. All rights reserved.</p>" +
+               "              <p style=\"margin: 0; font-size: 12px; color: #888888;\">&copy; " + Year.now().getValue() + " Lumora. All rights reserved.</p>" +
                "            </td>" +
                "          </tr>" +
                "        </table>" +
