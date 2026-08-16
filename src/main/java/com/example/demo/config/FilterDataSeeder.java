@@ -36,19 +36,13 @@ public class FilterDataSeeder implements CommandLineRunner {
         // 1. Create Skin Types
         Map<String, SkinType> skinTypes = new HashMap<>();
         String[] stNames = {"Oily", "Dry", "Combination", "Sensitive", "Normal"};
-        // IDs must match 2,3,4,5,6 from frontend
-        long stId = 2;
         for (String name : stNames) {
-            SkinType st = new SkinType();
-            st.setName(name);
-            st = skinTypeRepository.save(st);
+            SkinType st = skinTypeRepository.findByName(name).orElseGet(() -> {
+                SkinType newSt = new SkinType();
+                newSt.setName(name);
+                return skinTypeRepository.save(newSt);
+            });
             skinTypes.put(name, st);
-            // We ignore setting hardcoded IDs directly since IDENTITY strategy will generate them.
-            // Wait, we need them to be exactly 2,3,4,5,6 if frontend is hardcoded. 
-            // Hibernate might start at 1. Let's just rely on string matching to be safe for now, 
-            // but the frontend uses 2..6. If they mismatch, frontend filters will fail.
-            // We can update the frontend to fetch options or we can force IDs using SQL.
-            // For now, let's just save them.
         }
 
         // 2. Create Skin Concerns
@@ -58,9 +52,11 @@ public class FilterDataSeeder implements CommandLineRunner {
             "Blemishes / Acne-Prone", "Anti-Aging / Fine Lines", "Universal / Everyday Care"
         };
         for (String name : scNames) {
-            SkinConcern sc = new SkinConcern();
-            sc.setName(name);
-            sc = skinConcernRepository.save(sc);
+            SkinConcern sc = skinConcernRepository.findByName(name).orElseGet(() -> {
+                SkinConcern newSc = new SkinConcern();
+                newSc.setName(name);
+                return skinConcernRepository.save(newSc);
+            });
             concerns.put(name, sc);
         }
 
@@ -70,9 +66,12 @@ public class FilterDataSeeder implements CommandLineRunner {
             "Hyaluronic Acid", "Vitamin C", "Niacinamide", "Salicylic Acid", "Retinol", "Peptides"
         };
         for (String name : ingNames) {
-            Ingredient ing = new Ingredient();
-            ing.setName(name);
-            ing = ingredientRepository.save(ing);
+            Ingredient ing = ingredientRepository.findByName(name);
+            if (ing == null) {
+                ing = new Ingredient();
+                ing.setName(name);
+                ing = ingredientRepository.save(ing);
+            }
             ingredients.put(name, ing);
         }
 
