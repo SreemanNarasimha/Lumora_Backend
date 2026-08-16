@@ -15,20 +15,27 @@ public class FilterDataSeeder implements CommandLineRunner {
     private final SkinConcernRepository skinConcernRepository;
     private final IngredientRepository ingredientRepository;
     private final ProductRepository productRepository;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     public FilterDataSeeder(SkinTypeRepository skinTypeRepository,
                             SkinConcernRepository skinConcernRepository,
                             IngredientRepository ingredientRepository,
-                            ProductRepository productRepository) {
+                            ProductRepository productRepository,
+                            org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.skinTypeRepository = skinTypeRepository;
         this.skinConcernRepository = skinConcernRepository;
         this.ingredientRepository = ingredientRepository;
         this.productRepository = productRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        // Fallback: Ensure tables exist in case Hibernate ddl-auto=update misses them
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS ingredients (ingredient_id BIGINT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL UNIQUE)");
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS product_ingredients (product_id INT NOT NULL, ingredient_id BIGINT NOT NULL, PRIMARY KEY (product_id, ingredient_id), FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE, FOREIGN KEY (ingredient_id) REFERENCES ingredients(ingredient_id) ON DELETE CASCADE)");
+
         if (skinTypeRepository.count() > 0 && skinConcernRepository.count() > 0 && ingredientRepository.count() > 0) {
             return; // Already seeded
         }
