@@ -28,12 +28,12 @@ public class AuthService {
     private final JwtTokenRepository jwtTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ResendEmailService emailService;
+    private final EmailService emailService;
     private final JwtUtil jwtUtil;
 
     public AuthService(UserRepository userRepository, PendingRegistrationRepository pendingRegistrationRepository,
                        JwtTokenRepository jwtTokenRepository, PasswordResetTokenRepository passwordResetTokenRepository,
-                       PasswordEncoder passwordEncoder, ResendEmailService emailService, JwtUtil jwtUtil) {
+                       PasswordEncoder passwordEncoder, EmailService emailService, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.pendingRegistrationRepository = pendingRegistrationRepository;
         this.jwtTokenRepository = jwtTokenRepository;
@@ -76,7 +76,7 @@ public class AuthService {
 
         pendingRegistrationRepository.save(pending);
 
-        emailService.sendOtpEmail(email, otp);
+        emailService.sendVerificationOtp(email, otp);
 
         return new MessageResponse("OTP sent to " + email);
     }
@@ -189,7 +189,7 @@ public class AuthService {
         resetToken.setLastSentAt(LocalDateTime.now());
 
         passwordResetTokenRepository.save(resetToken);
-        emailService.sendOtpEmail(email, otp);
+        emailService.sendForgotPasswordOtp(email, otp);
 
         return new MessageResponse("OTP sent to " + email);
     }

@@ -18,6 +18,22 @@ spring:
       hibernate:
         format_sql: false
 
+  mail:
+    host: smtp-relay.brevo.com
+    port: 587
+    username: ${BREVO_SMTP_LOGIN}
+    password: ${BREVO_SMTP_KEY}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 20000
+          timeout: 20000
+          writetimeout: 20000
+
 
 lumiere:
   security:
@@ -31,9 +47,10 @@ lumiere:
     webhook-secret: ${RAZORPAY_WEBHOOK_SECRET}
   frontend:
     url: ${FRONTEND_URL}
-  resend:
-    api-key: ${RESEND_API_KEY}
-    from-email: ${RESEND_FROM_EMAIL}
+
+brevo:
+  sender-email: ${BREVO_SENDER_EMAIL}
+  sender-name: ${BREVO_SENDER_NAME}
 
 server:
   port: ${PORT:8080}
