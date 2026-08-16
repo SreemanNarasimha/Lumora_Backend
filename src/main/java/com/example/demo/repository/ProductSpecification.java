@@ -36,14 +36,8 @@ public class ProductSpecification {
     public static Specification<Product> hasIngredientIn(java.util.List<String> ingredients) {
         return (root, query, cb) -> {
             if (ingredients == null || ingredients.isEmpty()) return null;
-            // Join with OR conditions for multiple ingredients using like
-            java.util.List<jakarta.persistence.criteria.Predicate> predicates = new java.util.ArrayList<>();
-            for (String ingredient : ingredients) {
-                if (ingredient != null && !ingredient.trim().isEmpty()) {
-                    predicates.add(cb.like(cb.lower(root.get("description")), "%" + ingredient.toLowerCase() + "%"));
-                }
-            }
-            return cb.or(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+            Join<Product, com.example.demo.entity.Ingredient> ingredientJoin = root.join("ingredients");
+            return ingredientJoin.get("name").in(ingredients);
         };
     }
 

@@ -67,6 +67,14 @@ public class Product {
     )
     private List<SkinConcern> concerns;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "product_ingredients",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "ingredient_id")
+    )
+    private List<Ingredient> ingredients;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
