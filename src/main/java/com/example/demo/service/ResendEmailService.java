@@ -13,10 +13,10 @@ public class ResendEmailService {
 
     private final WebClient webClient;
     
-    @Value("${resend.api-key}")
+    @Value("${RESEND_API_KEY}")
     private String apiKey;
     
-    @Value("${resend.from-email}")
+    @Value("${RESEND_FROM_EMAIL:onboarding@resend.dev}")
     private String fromEmail;
 
     public ResendEmailService(WebClient resendWebClient) {
@@ -25,19 +25,28 @@ public class ResendEmailService {
 
     public void sendOtpEmail(String to, String otp) {
         Map<String, Object> request = new HashMap<>();
-        request.put("from", fromEmail);
+        request.put("from", "onboarding@resend.dev"); // Ensure it equals onboarding@resend.dev
         request.put("to", List.of(to));
         request.put("subject", "Lumora • Your Password Reset Code");
         request.put("html", buildHtmlTemplate(otp));
 
-        webClient.post()
-            .uri("/emails")
-            .header("Authorization", "Bearer " + apiKey)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(request)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
+        try {
+            String response = webClient.post()
+                .uri("/emails")
+                .header("Authorization", "Bearer " + apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+            System.out.println("Resend API Response: " + response);
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            System.err.println("Resend API Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+            throw new RuntimeException("Failed to send email. Please try again later.");
+        } catch (Exception e) {
+            System.err.println("Unexpected error while sending email: " + e.getMessage());
+            throw new RuntimeException("Failed to send email. Please try again later.");
+        }
     }
 
     private String buildHtmlTemplate(String otp) {
